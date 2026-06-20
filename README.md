@@ -1,67 +1,75 @@
-# Telegram Bot
+# Telegram Bot (Pyrogram + MongoDB)
 
-A simple plugin-based Telegram bot using python-telegram-bot v21 with SQLite storage.
+A plugin-based Telegram bot built with Pyrogram v2 and MongoDB.
 
 ## Structure
 
 ```
 tgbot/
-├── bot.py              ← Entry point, loads plugins automatically
+├── bot.py              ← Entry point
+├── info.py             ← All config variables (reads from .env)
+├── keep_alive.py       ← HTTP server + self-ping for free hosting
 ├── requirements.txt
 ├── .env.example
 │
 ├── plugins/            ← Drop any .py file here to add commands
-│   ├── start.py        ← /start command
-│   ├── help.py         ← /help command
-│   └── ping.py         ← /ping command
+│   ├── start.py        ← /start
+│   ├── help.py         ← /help
+│   └── ping.py         ← /ping
 │
-└── db/                 ← Database layer
-    ├── database.py     ← SQLite connection + init
-    └── models.py       ← Query helpers (upsert_user, get_user, etc.)
+└── db/
+    ├── database.py     ← MongoDB connection + init
+    └── models.py       ← upsert_user, get_user, count_users
+```
+
+## Setup
+
+### 1. Get your credentials
+
+| Variable   | Where to get it |
+|------------|-----------------|
+| `API_ID`   | https://my.telegram.org → App credentials |
+| `API_HASH` | https://my.telegram.org → App credentials |
+| `BOT_TOKEN`| [@BotFather](https://t.me/BotFather) → /newbot |
+| `MONGO_URI`| [MongoDB Atlas](https://cloud.mongodb.com) → Connect → Drivers |
+
+### 2. Install & run
+
+```bash
+git clone <your-repo>
+cd tgbot
+
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+
+pip install -r requirements.txt
+
+cp .env.example .env
+# Fill in your values in .env
+
+python bot.py
 ```
 
 ## Adding a plugin
 
-Create a new file in `plugins/`, implement your handler, then add a `register(app)` function:
+Create a new file in `plugins/`. No registration needed — Pyrogram picks it up automatically:
 
 ```python
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello!")
-
-def register(app):
-    app.add_handler(CommandHandler("hello", hello))
+@Client.on_message(filters.command("hello"))
+async def hello(client: Client, message: Message):
+    await message.reply_text("Hello!")
 ```
 
-That's it — `bot.py` picks it up automatically on next start.
+## Deploy (Render / Koyeb / Railway)
 
-## Setup
+Set these env vars in the dashboard:
 
-```bash
-# 1. Clone and enter the repo
-git clone <your-repo>
-cd tgbot
-
-# 2. Create virtual environment
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Set your token
-cp .env.example .env
-# Edit .env and set BOT_TOKEN=your_token_here
-
-# 5. Run
-python bot.py
+```
+API_ID, API_HASH, BOT_TOKEN, MONGO_URI
 ```
 
-## Deploy (Koyeb / Render / Railway)
-
-Set the `BOT_TOKEN` environment variable in the dashboard and use:
-
-- **Start command:** `python bot.py`
 - **Build command:** `pip install -r requirements.txt`
+- **Start command:** `python bot.py`
