@@ -1,16 +1,13 @@
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 from db.models import upsert_user
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
+@Client.on_message(filters.command("start") & filters.private)
+async def start(client: Client, message: Message):
+    user = message.from_user
     upsert_user(user.id, user.username, user.first_name)
-    await update.message.reply_text(
+    await message.reply_text(
         f"Hello {user.first_name}! I'm alive and ready."
     )
-
-
-def register(app):
-    app.add_handler(CommandHandler("start", start))

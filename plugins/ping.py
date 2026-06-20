@@ -1,10 +1,7 @@
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 
-async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Pong!")
-
-
-def register(app):
-    app.add_handler(CommandHandler("ping", ping))
+@Client.on_message(filters.command("ping"))
+async def ping(client: Client, message: Message):
+    await message.reply_text("Pong!")

@@ -1,18 +1,14 @@
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
-
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 HELP_TEXT = """
-Available commands:
-/start  — Register and say hello
-/help   — Show this message
-/ping   — Check if bot is alive
+**Available commands:**
+/start — Register and say hello
+/help  — Show this message
+/ping  — Check if bot is alive
 """
 
 
-async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(HELP_TEXT)
-
-
-def register(app):
-    app.add_handler(CommandHandler("help", help_cmd))
+@Client.on_message(filters.command("help"))
+async def help_cmd(client: Client, message: Message):
+    await message.reply_text(HELP_TEXT)
