@@ -1,6 +1,7 @@
 import logging
 
 from pyrogram import Client
+from pyrogram.storage import MemoryStorage
 
 import info
 from db.database import init_db
@@ -16,7 +17,8 @@ app = Client(
     api_id=info.API_ID,
     api_hash=info.API_HASH,
     bot_token=info.BOT_TOKEN,
-    plugins=dict(root="plugins"),   # Pyrogram auto-loads every file in plugins/
+    storage=MemoryStorage("tgbot"),   # no disk writes — safe on ephemeral hosts
+    plugins=dict(root="plugins"),
 )
 
 if __name__ == "__main__":
