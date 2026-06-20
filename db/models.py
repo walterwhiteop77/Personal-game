@@ -1,29 +1,35 @@
-from .database import get_connection
+from datetime import datetime, timezone
 
+from .database import get_db
+
+
+# ── Users ──────────────────────────────────────────────────────────────────────
 
 def upsert_user(user_id: int, username: str | None, first_name: str | None):
-    with get_connection() as conn:
-        conn.execute(
-            """
-            INSERT INTO users (id, username, first_name)
-            VALUES (?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                username   = excluded.username,
-                first_name = excluded.first_name
-            """,
-            (user_id, username, first_name),
-        )
+    get_db()["users"].update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "username": username,
+                "first_name": first_name,
+                "last_seen": datetime.now(timezone.utc),
+            },
+            "$setOnInsert": {
+                "user_id": user_id,
+                "joined_at": datetime.now(timezone.utc),
+            },
+        },
+        upsert=True,
+    )
 
 
-def get_user(user_id: int):
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM users WHERE id = ?", (user_id,)
-        ).fetchone()
-        return dict(row) if row else None
+def get_user(user_id: int) -> dict | None:
+    return get_db()["users"].find_one({"user_id": user_id}, {"_id": 0})
 
 
 def count_users() -> int:
-    with get_connection() as conn:
-        row = conn.execute("SELECT COUNT(*) as n FROM users").fetchone()
-        return row["n"]
+    return get_db()["users"].count_documents({})
+
+
+def get_all_user_ids() -> list[int]:
+    return [doc["user_id"] for doc in get_db()["users"].find({}, {"user_id": 1})]

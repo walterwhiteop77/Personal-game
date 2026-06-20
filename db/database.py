@@ -1,23 +1,19 @@
-import sqlite3
-from pathlib import Path
+from pymongo import MongoClient
+from pymongo.database import Database
 
-DB_PATH = Path(__file__).parent / "bot.db"
+import info
+
+_client: MongoClient | None = None
 
 
-def get_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def get_db() -> Database:
+    global _client
+    if _client is None:
+        _client = MongoClient(info.MONGO_URI)
+    return _client[info.MONGO_DB_NAME]
 
 
 def init_db():
-    with get_connection() as conn:
-        conn.executescript("""
-            CREATE TABLE IF NOT EXISTS users (
-                id        INTEGER PRIMARY KEY,
-                username  TEXT,
-                first_name TEXT,
-                joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
-    print("Database initialised.")
+    db = get_db()
+    db["users"].create_index("user_id", unique=True)
+    print(f"[db] Connected to MongoDB — database: {info.MONGO_DB_NAME}")
