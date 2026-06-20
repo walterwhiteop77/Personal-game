@@ -18,27 +18,25 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
-def _run_server():
+def _serve():
     HTTPServer(("0.0.0.0", info.PORT), _Handler).serve_forever()
 
 
-def _run_pinger():
-    # Resolve ping URL at runtime so RENDER_EXTERNAL_URL is available
-    time.sleep(60)
-    ping_url = os.environ.get("RENDER_EXTERNAL_URL", f"http://localhost:{info.PORT}")
+def _ping():
+    time.sleep(60)                                          # let server come up first
+    url = os.environ.get("RENDER_EXTERNAL_URL") or f"http://localhost:{info.PORT}"
     interval = info.PING_INTERVAL_MINUTES * 60
-    print(f"[keep_alive] pinger targeting {ping_url}")
+    print(f"[keep_alive] pinger → {url} every {info.PING_INTERVAL_MINUTES} min")
     while True:
         try:
-            urllib.request.urlopen(ping_url, timeout=10)
-            print(f"[keep_alive] ping ok → {ping_url}")
+            urllib.request.urlopen(url, timeout=10)
+            print(f"[keep_alive] ping ok")
         except Exception as e:
             print(f"[keep_alive] ping failed: {e}")
         time.sleep(interval)
 
 
 def keep_alive():
-    threading.Thread(target=_run_server, daemon=True).start()
-    threading.Thread(target=_run_pinger, daemon=True).start()
-    print(f"[keep_alive] HTTP server on port {info.PORT}, "
-          f"pinging every {info.PING_INTERVAL_MINUTES} min")
+    threading.Thread(target=_serve, daemon=True).start()
+    threading.Thread(target=_ping,  daemon=True).start()
+    print(f"[keep_alive] HTTP server started on port {info.PORT}")

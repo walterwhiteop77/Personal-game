@@ -1,10 +1,9 @@
 import logging
 
-from pymongo import MongoClient as PyMongoClient
 from pyrogram import Client
-from pyrogram.storage.mongo_storage import MongoStorage
 
 import info
+from storage import BotStorage
 from db.database import init_db
 from keep_alive import keep_alive
 
@@ -13,14 +12,12 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-_mongo = PyMongoClient(info.MONGO_URI)
-
 app = Client(
     name="tgbot",
     api_id=info.API_ID,
     api_hash=info.API_HASH,
     bot_token=info.BOT_TOKEN,
-    storage=MongoStorage("tgbot", _mongo, info.MONGO_DB_NAME),
+    storage=BotStorage("tgbot"),
     plugins=dict(root="plugins"),
 )
 
