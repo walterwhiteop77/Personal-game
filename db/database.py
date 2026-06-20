@@ -22,10 +22,14 @@ def get_db() -> Database:
 def init_db():
     try:
         db = get_db()
-        db.command("ping")                              # verify connection is live
+        db.command("ping")
         db["users"].create_index("user_id", unique=True)
         print(f"[db] Connected to MongoDB — database: {info.MONGO_DB_NAME}")
+    except RuntimeError:
+        raise
     except (ServerSelectionTimeoutError, ConfigurationError) as e:
         raise RuntimeError(
-            f"Could not connect to MongoDB. Check your MONGO_URI env var.\nDetail: {e}"
+            f"Could not connect to MongoDB. Check MONGO_URI.\nDetail: {e}"
         ) from e
+    except Exception as e:
+        raise RuntimeError(f"Unexpected DB error: {e}") from e
