@@ -4,19 +4,24 @@ from pymongo.errors import ServerSelectionTimeoutError, ConfigurationError
 
 import info
 
-_client: MongoClient | None = None
+# Shared client — reused by both MongoStorage (session) and db models
+client: MongoClient | None = None
 
 
-def get_db() -> Database:
-    global _client
-    if _client is None:
+def get_client() -> MongoClient:
+    global client
+    if client is None:
         if not info.MONGO_URI or info.MONGO_URI.startswith("mongodb+srv://<"):
             raise RuntimeError(
                 "MONGO_URI is not set or still has the placeholder value. "
                 "Set it in your Render dashboard → Environment."
             )
-        _client = MongoClient(info.MONGO_URI, serverSelectionTimeoutMS=10000)
-    return _client[info.MONGO_DB_NAME]
+        client = MongoClient(info.MONGO_URI, serverSelectionTimeoutMS=10000)
+    return client
+
+
+def get_db() -> Database:
+    return get_client()[info.MONGO_DB_NAME]
 
 
 def init_db():
