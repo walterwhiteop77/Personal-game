@@ -11,4 +11,6 @@ HELP_TEXT = """
 
 @Client.on_message(filters.command("help"))
 async def help_cmd(client: Client, message: Message):
+    if not message.from_user:
+        return
     await message.reply_text(HELP_TEXT)
