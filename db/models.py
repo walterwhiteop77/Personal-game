@@ -1,21 +1,18 @@
 from datetime import datetime, timezone
-
 from .database import get_db
 
 
-# ── Users ──────────────────────────────────────────────────────────────────────
-
-def upsert_user(user_id: int, username: str | None, first_name: str | None):
+def upsert_user(user_id: int, username: str | None, first_name: str | None) -> None:
     get_db()["users"].update_one(
         {"user_id": user_id},
         {
             "$set": {
-                "username": username,
+                "username":   username,
                 "first_name": first_name,
-                "last_seen": datetime.now(timezone.utc),
+                "last_seen":  datetime.now(timezone.utc),
             },
             "$setOnInsert": {
-                "user_id": user_id,
+                "user_id":   user_id,
                 "joined_at": datetime.now(timezone.utc),
             },
         },
@@ -32,4 +29,4 @@ def count_users() -> int:
 
 
 def get_all_user_ids() -> list[int]:
-    return [doc["user_id"] for doc in get_db()["users"].find({}, {"user_id": 1})]
+    return [d["user_id"] for d in get_db()["users"].find({}, {"user_id": 1})]
