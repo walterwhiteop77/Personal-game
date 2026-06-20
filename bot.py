@@ -1,7 +1,7 @@
 import logging
 
 from pyrogram import Client
-from pyrogram.storage import MemoryStorage
+from pyrogram.storage.mongo_storage import MongoStorage
 
 import info
 from db.database import init_db
@@ -17,7 +17,11 @@ app = Client(
     api_id=info.API_ID,
     api_hash=info.API_HASH,
     bot_token=info.BOT_TOKEN,
-    storage=MemoryStorage("tgbot"),   # no disk writes — safe on ephemeral hosts
+    storage=MongoStorage(
+        name="tgbot",
+        connection_string=info.MONGO_URI,
+        database=info.MONGO_DB_NAME,
+    ),
     plugins=dict(root="plugins"),
 )
 

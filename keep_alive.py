@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 import urllib.request
@@ -22,12 +23,15 @@ def _run_server():
 
 
 def _run_pinger():
+    # Resolve ping URL at runtime so RENDER_EXTERNAL_URL is available
     time.sleep(60)
+    ping_url = os.environ.get("RENDER_EXTERNAL_URL", f"http://localhost:{info.PORT}")
     interval = info.PING_INTERVAL_MINUTES * 60
+    print(f"[keep_alive] pinger targeting {ping_url}")
     while True:
         try:
-            urllib.request.urlopen(info.PING_URL, timeout=10)
-            print(f"[keep_alive] ping ok → {info.PING_URL}")
+            urllib.request.urlopen(ping_url, timeout=10)
+            print(f"[keep_alive] ping ok → {ping_url}")
         except Exception as e:
             print(f"[keep_alive] ping failed: {e}")
         time.sleep(interval)

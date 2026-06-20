@@ -17,8 +17,8 @@ MONGO_DB_NAME: str = os.environ.get("MONGO_DB_NAME", "tgbot")
 
 # ── Server (keep-alive) ────────────────────────────────────────────────────────
 PORT: int = int(os.environ.get("PORT", 8080))
-PING_URL: str = os.environ.get("RENDER_EXTERNAL_URL", f"http://localhost:{PORT}")
 PING_INTERVAL_MINUTES: int = int(os.environ.get("PING_INTERVAL_MINUTES", 14))
 
 # ── Bot settings ───────────────────────────────────────────────────────────────
-OWNER_ID: int = int(os.environ.get("OWNER_ID", 0))
+_owner = os.environ.get("OWNER_ID", "0")
+OWNER_ID: int = int(_owner) if _owner.isdigit() else 0
